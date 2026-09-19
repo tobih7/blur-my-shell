@@ -209,9 +209,9 @@ export const ApplicationsBlur = class ApplicationsBlur {
         // register the blurred window
         this.meta_windows.add(meta_window);
 
-        // update the blur when wm-class is changed
+        // update the blur when either window identifier is changed
         this.connections.connect(
-            meta_window, 'notify::wm-class',
+            meta_window, ['notify::wm-class', 'notify::gtk-application-id'],
             _ => this.check_blur(meta_window)
         );
 
@@ -380,20 +380,24 @@ export const ApplicationsBlur = class ApplicationsBlur {
     /// - * matches any sequence of characters
     /// - ? matches any single character
     /// - Matching is case-insensitive
+    /// - Either the GTK application ID or window class can match a pattern
     check_blur(meta_window) {
-        const window_wm_class = meta_window.get_wm_class();
+        const window_identifiers = [
+            meta_window.get_gtk_application_id(),
+            meta_window.get_wm_class()
+        ].filter(Boolean);
         const enable_all = this.settings.applications.ENABLE_ALL;
-        if (window_wm_class)
-            this._log(`window associated to wm class name ${window_wm_class}`);
+        const patterns = enable_all ? this._compiled_blacklist : this._compiled_whitelist;
+        const matches = window_identifiers.some(id => matchesAnyPattern(id, patterns));
+        if (window_identifiers.length)
+            this._log(`window associated to identifiers ${window_identifiers.join(', ')}`);
 
 
         // if we are in blacklist mode and the window is not blacklisted
         // or if we are in whitelist mode and the window is whitelisted
         if (
-            window_wm_class !== ""
-            && ((enable_all && !matchesAnyPattern(window_wm_class, this._compiled_blacklist))
-                || (!enable_all && matchesAnyPattern(window_wm_class, this._compiled_whitelist))
-            )
+            window_identifiers.length > 0
+            && (enable_all ? !matches : matches)
             && [
                 Meta.FrameType.NORMAL,
                 Meta.FrameType.DIALOG,

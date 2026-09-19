@@ -59,12 +59,14 @@ export const ApplicationsService = class ApplicationsService {
                 return;
 
             const window_actor = this._find_window_actor(target);
-            const wm_class = window_actor?.meta_window?.get_wm_class()
-                ?? 'window-not-found';
+            const meta_window = window_actor?.meta_window;
+            const identifier = meta_window?.get_gtk_application_id()
+                || meta_window?.get_wm_class()
+                || 'window-not-found';
             this.pick_completed = true;
             this.DBusImpl.emit_signal(
                 'picked',
-                new GLib.Variant('(s)', [wm_class])
+                new GLib.Variant('(s)', [identifier])
             );
         });
         inspector.connect('closed', () => this._finish_pick(inspector));
