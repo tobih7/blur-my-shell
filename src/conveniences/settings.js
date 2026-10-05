@@ -2,6 +2,16 @@ import GLib from 'gi://GLib';
 import { pack_pipelines, unpack_pipelines } from './pipeline_settings.js';
 const Signals = imports.signals;
 
+const RESET_SECTIONS = {
+    panel: ['panel', 'hidetopbar', 'dash-to-panel'],
+    overview: ['overview', 'appfolder'],
+    dash: ['dash-to-dock'],
+    applications: ['applications'],
+    'application-lists': ['applications'],
+    popup: ['popup'],
+    other: ['general', 'lockscreen', 'screenshot', 'window-list', 'coverflow-alt-tab'],
+};
+
 /// An enum non-extensively describing the type of gsettings key.
 export const Type = {
     B: 'Boolean',
@@ -179,20 +189,56 @@ export const Settings = class Settings {
 
     /// Reset the preferences.
     reset() {
-        this.keys.forEach(bundle => {
-            let component = this;
-            if (bundle.component !== "general") {
-                let bundle_component = bundle.component.replaceAll('-', '_');
-                component = this[bundle_component];
-            }
-
-            bundle.schemas.forEach(key => {
-                let property_name = this.get_property_name(key.name);
-                component[property_name + '_reset']();
-            });
-        });
-
+        if (!this._reset_keys(this.keys.flatMap(bundle =>
+            bundle.schemas.map(key => ({ component: bundle.component, name: key.name }))
+        )))
+            return false;
         this.emit('reset', true);
+        return true;
+    }
+
+    reset_section(section) {
+        if (section !== 'pipelines' && !Object.hasOwn(RESET_SECTIONS, section))
+            throw new Error(`Unknown reset section: ${section}`);
+
+        const keys = this.keys.flatMap(bundle => bundle.schemas
+            .filter(key => {
+                if (section === 'pipelines')
+                    return key.name === 'pipeline' || key.name === 'pipelines';
+                if (!RESET_SECTIONS[section].includes(bundle.component))
+                    return false;
+                const is_list = key.name === 'whitelist' || key.name === 'blacklist';
+                if (section === 'application-lists')
+                    return is_list;
+                if (section === 'applications')
+                    return !is_list;
+                return key.name !== 'pipelines';
+            })
+            .map(key => ({ component: bundle.component, name: key.name }))
+        );
+
+        if (!this._reset_keys(keys))
+            return false;
+        if (section === 'application-lists')
+            this.emit('application-lists-reset');
+        return true;
+    }
+
+    _reset_keys(keys) {
+        const targets = keys.map(key => ({
+            ...key,
+            owner: key.component === 'general' ? this : this[key.component.replaceAll('-', '_')],
+        }));
+        // Do not delete custom pipelines while a locked selection still uses one.
+        if (targets.some(key => !key.owner.settings.is_writable(key.name)))
+            return false;
+
+        // Restore selections before replacing the pipeline list, so selectors
+        // never see a missing pipeline and choose a different value themselves.
+        targets.sort((a, b) => Number(a.name === 'pipelines') - Number(b.name === 'pipelines'));
+        for (const key of targets)
+            key.owner[this.get_property_name(key.name) + '_reset']();
+        return true;
     }
 
     /// From the gschema name, returns the name of the associated property on

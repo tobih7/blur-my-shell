@@ -101,36 +101,32 @@
     <child>
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Reset preferences</property>
-        <property name="description" translatable="yes">Restore all Blur my Shell preferences to their defaults.</property>
-        <property name="header-suffix">
-          <object class="GtkButton" id="reset">
-            <property name="halign">start</property>
-            <property name="valign">center</property>
-            <child>
-              <object class="GtkBox">
-                <property name="margin-start">20</property>
-                <property name="margin-end">20</property>
-                <property name="margin-top">6</property>
-                <property name="margin-bottom">6</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="margin-end">6</property>
+        <property name="description" translatable="yes">Restore default settings.</property>
+        <child>
+          <object class="AdwActionRow" id="reset_all_row">
+            <property name="title" translatable="yes">Reset all preferences</property>
+            <property name="activatable-widget">reset</property>
+            <child type="suffix">
+              <object class="GtkButton" id="reset">
+                <property name="valign">center</property>
+                <property name="child">
+                  <object class="AdwButtonContent">
                     <property name="icon-name">reset-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
                     <property name="label" translatable="yes">Reset</property>
                   </object>
-                </child>
+                </property>
+                <style>
+                  <class name="destructive-action" />
+                </style>
               </object>
             </child>
-            <style>
-              <class name="circular" />
-              <class name="destructive-action" />
-            </style>
           </object>
-        </property>
+        </child>
+        <child>
+          <object class="AdwExpanderRow" id="reset_sections">
+            <property name="title" translatable="yes">Reset individual sections</property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

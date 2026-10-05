@@ -130,10 +130,12 @@ export const Applications = GObject.registerClass({
 
         this.add_widgets_from_lists();
 
-        this.preferences.connect('reset', () => {
+        const refresh_lists = () => {
             this.remove_all_widgets();
             this.add_widgets_from_lists();
-        });
+        };
+        this.preferences.connect('reset', refresh_lists);
+        this.preferences.connect('application-lists-reset', refresh_lists);
     }
 
     get _whitelist_elements() {

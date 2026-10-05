@@ -727,10 +727,6 @@ msgstr ""
 msgid "Reset preferences"
 msgstr ""
 
-#: resources/ui/other.ui:104
-msgid "Restore all Blur my Shell preferences to their defaults."
-msgstr ""
-
 #: resources/ui/other.ui:123 src/preferences/other.js:83
 msgid "Reset"
 msgstr ""
@@ -1019,10 +1015,6 @@ msgstr ""
 msgid "Reset all preferences?"
 msgstr ""
 
-#: src/preferences/other.js:80
-msgid "Pipelines and component settings will return to their defaults."
-msgstr ""
-
 #: src/preferences/other.js:82
 msgid "Cancel"
 msgstr ""
@@ -1084,4 +1076,78 @@ msgstr ""
 #: resources/ui/applications.ui:88 resources/ui/dash.ui:88
 #: resources/ui/panel.ui:88 resources/ui/popup.ui:134
 msgid "None"
+msgstr ""
+
+#: src/preferences/other.js:83
+msgid "Removes custom pipelines."
+msgstr ""
+
+#: src/preferences/other.js:87
+msgid "Keeps application lists."
+msgstr ""
+
+#: src/preferences/other.js:88
+msgid "Applications Whitelist and Blacklist"
+msgstr ""
+
+#: src/preferences/other.js:88
+msgid "Keeps application settings."
+msgstr ""
+
+#: src/preferences/other.js:115
+msgid "Unable to reset preferences"
+msgstr ""
+
+#: src/preferences/other.js:116
+msgid "Some settings are locked. Nothing was reset."
+msgstr ""
+
+#: src/preferences/other.js:118
+msgid "Close"
+msgstr ""
+
+#: src/preferences/other.js:127
+#, javascript-format
+msgid "Reset “%s”?"
+msgstr ""
+
+#: src/preferences/other.js:129
+msgid "All preferences will return to their defaults."
+msgstr ""
+
+#: src/preferences/other.js:130
+msgid "This section will return to its defaults."
+msgstr ""
+
+#: src/preferences/other.js:132
+msgid ""
+"Restore default pipelines and selections. Custom pipelines will be removed."
+msgstr ""
+
+#: src/preferences/other.js:134
+msgid "Reset application lists?"
+msgstr ""
+
+#: src/preferences/other.js:135
+msgid "Restore default lists and remove custom entries."
+msgstr ""
+
+#: src/preferences/other.js:137
+msgid "Restore application settings. Application lists will be kept."
+msgstr ""
+
+#: resources/ui/other.ui:104
+msgid "Restore default settings."
+msgstr ""
+
+#: resources/ui/other.ui:107
+msgid "Reset all preferences"
+msgstr ""
+
+#: resources/ui/other.ui:127
+msgid "Reset individual sections"
+msgstr ""
+
+#: resources/ui/other.ui:128
+msgid "Reset a specific section."
 msgstr ""

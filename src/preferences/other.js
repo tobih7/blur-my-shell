@@ -2,6 +2,7 @@ import Adw from 'gi://Adw';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 
@@ -22,7 +23,9 @@ export const Other = GObject.registerClass({
         'coverflow_alt_tab_pipeline_choose_row',
 
         'debug',
-        'reset'
+        'reset',
+        'reset_all_row',
+        'reset_sections'
     ],
 }, class Other extends Adw.PreferencesPage {
     constructor(preferences, pipelines_manager, pipelines_page) {
@@ -72,12 +75,70 @@ export const Other = GObject.registerClass({
         );
 
         this._reset.connect('clicked', () => this.confirm_reset());
+        this.add_section_resets();
     }
 
-    confirm_reset() {
+    add_section_resets() {
+        const sections = [
+            ['pipelines', _('Pipelines'), _('Removes custom pipelines.')],
+            ['panel', _('Panel'), ''],
+            ['overview', _('Overview'), ''],
+            ['dash', _('Dash'), ''],
+            ['applications', _('Applications'), _('Keeps application lists.')],
+            ['application-lists', _('Applications Whitelist and Blacklist'), _('Keeps application settings.')],
+            ['popup', _('Popups'), ''],
+            ['other', _('Other'), ''],
+        ];
+        for (const [section, title, subtitle] of sections) {
+            const row = new Adw.ActionRow({ title, subtitle });
+            const button = new Gtk.Button({
+                valign: Gtk.Align.CENTER,
+                child: new Adw.ButtonContent({
+                    icon_name: 'reset-symbolic',
+                    label: _('Reset'),
+                }),
+            });
+            button.add_css_class('destructive-action');
+            row.add_suffix(button);
+            row.activatable_widget = button;
+            button.connect('clicked', () => this.confirm_reset(section, title));
+            this._reset_sections.add_row(row);
+        }
+    }
+
+    reset_preferences(section = null) {
+        const reset = section === null
+            ? this.preferences.reset()
+            : this.preferences.reset_section(section);
+        if (!reset) {
+            const dialog = new Adw.AlertDialog({
+                heading: _('Unable to reset preferences'),
+                body: _('Some settings are locked. Nothing was reset.'),
+            });
+            dialog.add_response('close', _('Close'));
+            dialog.set_close_response('close');
+            dialog.present(this);
+        }
+    }
+
+    confirm_reset(section = null, title = null) {
+        let heading = section === null
+            ? _('Reset all preferences?')
+            : _('Reset “%s”?').format(title);
+        let body = section === null
+            ? _('All preferences will return to their defaults.')
+            : _('This section will return to its defaults.');
+        if (section === 'pipelines') {
+            body = _('Restore default pipelines and selections. Custom pipelines will be removed.');
+        } else if (section === 'application-lists') {
+            heading = _('Reset application lists?');
+            body = _('Restore default lists and remove custom entries.');
+        } else if (section === 'applications') {
+            body = _('Restore application settings. Application lists will be kept.');
+        }
         const dialog = new Adw.AlertDialog({
-            heading: _('Reset all preferences?'),
-            body: _('Pipelines and component settings will return to their defaults.'),
+            heading,
+            body,
         });
         dialog.add_response('cancel', _('Cancel'));
         dialog.add_response('reset', _('Reset'));
@@ -86,7 +147,7 @@ export const Other = GObject.registerClass({
         dialog.set_close_response('cancel');
         dialog.connect('response', (_dialog, response) => {
             if (response === 'reset')
-                this.preferences.reset();
+                this.reset_preferences(section);
         });
         dialog.present(this);
     }
