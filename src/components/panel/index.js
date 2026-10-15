@@ -5,6 +5,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Connections } from '../../conveniences/connections.js';
 import { connect_system_style_changes } from '../../conveniences/style.js';
 import { PanelDiscovery } from './panel_discovery.js';
+import { PanelOverviewClip } from './overview_clip.js';
 import { create_panel_background, place_panel_background } from './panel_background.js';
 import { get_proximity_windows, has_window_near_panel } from './window_proximity.js';
 import {
@@ -27,6 +28,7 @@ export const PanelBlur = class PanelBlur {
         this.actors_list = [];
         this.queued_updates = new Map();
         this.discovery = new PanelDiscovery(connections, settings, panel => this.maybe_blur_panel(panel));
+        this.overview_clip = new PanelOverviewClip(this);
         this.visibility_update_id = 0;
         this.panel_radius_update_id = 0;
         this.enabled = false;
@@ -67,6 +69,7 @@ export const PanelBlur = class PanelBlur {
         connect_system_style_changes(this.connections, () => {
             this.update_visibility();
         });
+        this.overview_clip.enable();
     }
 
     reset() {
@@ -540,6 +543,7 @@ export const PanelBlur = class PanelBlur {
 
         this._log("removing blur from top panel");
 
+        this.overview_clip.disable();
         this.disconnect_from_windows_and_overview();
 
         update_light_text(this.actors_list, false);
